@@ -46,14 +46,14 @@ const initAudioSlideshow = function(Reveal){
 	Reveal.addEventListener( 'fragmentshown', function( event ) {
 		if ( timer ) { clearTimeout( timer ); timer = null; }
 //console.debug( "fragmentshown ");
-		selectAudio();
-	} );
+    selectAudio(currentAudio)
+  })
 
 	Reveal.addEventListener( 'fragmenthidden', function( event ) {
 		if ( timer ) { clearTimeout( timer ); timer = null; }
 //console.debug( "fragmenthidden ");
-		selectAudio();
-	} );
+    selectAudio(currentAudio)
+  })
 
 	Reveal.addEventListener( 'ready', function( event ) {
 		setup();
@@ -120,13 +120,28 @@ const initAudioSlideshow = function(Reveal){
 					currentAudio.volume = previousAudio.volume;
 					currentAudio.muted = previousAudio.muted;
 //console.debug( "Play " + currentAudio.id);
-					currentAudio.play();
-				}
-			}
-			else
-				currentAudio.play();
-		}
-	}
+          currentAudio.play().catch(playError)
+        }
+      } else
+        currentAudio.play().catch(playError)
+    }
+  }
+
+  async function playError(e) {
+    if (e.name == "NotAllowedError" && advance) {
+      console.error("Audio Playback not allowed. Simulating sound play")
+      currentAudio.load()
+      if (isNaN(currentAudio.duration))
+        await new Promise((resolve, reject) => {
+          currentAudio.addEventListener("loadedmetadata", resolve)
+        })
+      setTimeout(() => {
+        const e = new Event("ended")
+        currentAudio.dispatchEvent(e)
+      }, currentAudio.duration * 1000)
+    } else if (e.name !== "AbortError")
+      throw e
+  }
 
 
 	function setup() {
@@ -342,15 +357,11 @@ setupAudioElement
 				}
 				// advance immediately or set a timer - or do nothing
 				if ( advance == "true" || advanceNow == 0 ) {
-					var previousAudio = currentAudio;
 					Reveal.next();
-					selectAudio( previousAudio );
 				}
 				else if ( advanceNow > 0 ) {
 					timer = setTimeout( function() {
-						var previousAudio = currentAudio;
 						Reveal.next();
-						selectAudio( previousAudio );
 						timer = null;
 					}, advanceNow );
 				}
