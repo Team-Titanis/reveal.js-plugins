@@ -58,8 +58,10 @@ const initAudioSlideshow = function(Reveal){
 	Reveal.addEventListener( 'ready', function( event ) {
 		setup();
 //console.debug( "ready ");
-		selectAudio();
-		document.dispatchEvent( new CustomEvent('stopplayback') );
+		if (autoplay){
+			selectAudio();
+			document.dispatchEvent( new CustomEvent('stopplayback') );
+		}
 
 	} );
 
@@ -121,10 +123,8 @@ const initAudioSlideshow = function(Reveal){
 					currentAudio.play();
 				}
 			}
-			else if ( autoplay ) {
+			else
 				currentAudio.play();
-			}
-
 		}
 	}
 
