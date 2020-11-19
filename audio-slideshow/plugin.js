@@ -409,11 +409,19 @@ setupAudioElement
 
 		if ( audioFile != null ) {
 			// Support comma separated lists of audio sources
-			audioFile.split( ',' ).forEach( function( source ) {
-				var audioSource = document.createElement( 'source' );
-				audioSource.src = source;
-				audioElement.insertBefore(audioSource, audioElement.firstChild);
-			} );
+			let data = null
+			audioFile.split(",").forEach(function (source) {
+				if (/data:/.test(source))
+					data = source
+				else {
+					if (data)
+						source = data + "," + source
+					data = null
+					var audioSource = document.createElement("source")
+					audioSource.src = source
+					audioElement.insertBefore(audioSource, audioElement.firstChild)
+				}
+			})
 		}
 		else if ( defaultAudios ) {
 			var audioExists = false;
